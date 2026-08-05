@@ -26,7 +26,6 @@ COPY server ./server
 COPY --from=ui /app/dist ./dist
 
 RUN mkdir -p /data
-VOLUME ["/data"]
 
 EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
