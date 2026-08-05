@@ -1,16 +1,51 @@
-# Deploy frong.ai (Cloudflare)
+# Deploy frong.ai
 
-Domain already on Cloudflare: **frong.ai**
+## Live right now
 
-## Suggested layout
+| Surface | URL |
+|---------|-----|
+| Railway (UI + API) | https://frong-production.up.railway.app |
+| Custom domain | `frong.ai` — add DNS in [DNS.md](DNS.md) |
+| Mac runtime | local API `:8787` + Ollama; LaunchAgent `com.frong.runtime` |
 
-1. **API + static** — run FastAPI on a VPS/Railway box; `npm run build` and serve `dist/` from the same app (already mounts `dist/` in `server/app.py`).
-2. **Ollama** — stays on your Mac/home box. Expose only privately (Tailscale IP or Cloudflare Tunnel to `8787` for the API, **not** public `:11434`).
-3. **DNS (Cloudflare)** — `frong.ai` / `www` → your origin (proxied).
-4. **X OAuth** — callback `https://frong.ai/auth/x/callback`; set `FRONG_DEV_AUTH=0`, `FRONG_SITE_URL=https://frong.ai`, `FRONG_FRONTEND_URL=https://frong.ai`.
-5. **Bot** — systemd/cron: `python -m bot.worker` with X bot tokens.
-6. **Dune** — account namespace `frong_ai`; schedule `python sync_dune.py`.
+Chat needs the Mac Ollama bridge (`OLLAMA_HOST` on Railway). Keep the Mac awake with:
 
-## Env
+```bash
+bash /Users/alex/Downloads/frong/scripts/frong-mac-runtime.sh
+# or
+launchctl load ~/Library/LaunchAgents/com.frong.runtime.plist
+```
 
-Copy `.env.example` → production secrets. Never commit `.env`.
+## Architecture
+
+1. **Railway** hosts the website + API + SQLite volume.
+2. **Your Mac** runs Ollama (`frong` model) and a Cloudflare quick tunnel so Railway can call it.
+3. **Cloudflare DNS** points `frong.ai` → Railway (see DNS.md).
+4. **X OAuth / bot tokens** — see [CREDENTIALS.md](CREDENTIALS.md).
+
+## After X OAuth is set
+
+```
+FRONG_DEV_AUTH=0
+FRONG_SITE_URL=https://frong.ai
+FRONG_FRONTEND_URL=https://frong.ai
+X_CLIENT_ID=...
+X_CLIENT_SECRET=...
+X_CALLBACK_URL=https://frong.ai/auth/x/callback
+```
+
+## Bot
+
+```bash
+cd /Users/alex/Downloads/frong/server && source .venv/bin/activate
+python -m bot.worker
+```
+
+## Dune (`frong_ai`)
+
+`DUNE_API_KEY` is already on Railway. Sync:
+
+```bash
+cd /Users/alex/Downloads/frong/server && source .venv/bin/activate
+python sync_dune.py
+```

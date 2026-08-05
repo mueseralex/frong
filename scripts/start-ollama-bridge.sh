@@ -3,12 +3,12 @@
 set -euo pipefail
 export PATH="$HOME/.local/bin:/usr/bin:/bin"
 mkdir -p "$HOME/.frong"
-PROXY_PY="/Users/alex/Downloads/frong/scripts/ollama_proxy.py"
+PROXY_PY="/Users/alex/frong/scripts/ollama_proxy.py"
 PROXY_BIN="$HOME/.frong/proxy-venv/bin/python"
 CLOUDFLARED="$HOME/.local/bin/cloudflared"
 URL_FILE="$HOME/.frong/ollama-tunnel.url"
 RAILWAY_BIN="$HOME/.railway/bin/railway"
-FRONG_DIR="/Users/alex/Downloads/frong"
+FRONG_DIR="/Users/alex/frong"
 
 # Ensure proxy
 if ! curl -fsS http://127.0.0.1:11435/api/tags >/dev/null 2>&1; then

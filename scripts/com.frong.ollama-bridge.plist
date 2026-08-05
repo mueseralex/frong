@@ -7,7 +7,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/alex/Downloads/frong/scripts/start-ollama-bridge.sh</string>
+    <string>/Users/alex/frong/scripts/start-ollama-bridge.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
