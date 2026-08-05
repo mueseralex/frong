@@ -224,6 +224,13 @@ loginDev.addEventListener("click", async () => {
   await loadHistory();
 });
 
-const user = await loadSession();
-if (user) await loadHistory();
-input.focus();
+async function boot() {
+  const user = await loadSession();
+  if (user) await loadHistory();
+  input.focus();
+}
+
+boot().catch((err) => {
+  console.error(err);
+  gate.classList.remove("hidden");
+});
