@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.server/
+server/data/
+server/.env
+.env
+*.sqlite3
+*.pyc
+__pycache__/
+.Python
+.venv/
+venv/
+.DS_Store
+*.log
+.vite/

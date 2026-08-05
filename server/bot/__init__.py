@@ -1,0 +1,1 @@
+"""Frong X automation workers."""

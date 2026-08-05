@@ -1,0 +1,17 @@
+{
+  "name": "frong",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "cd server && .venv/bin/uvicorn app:app --host 127.0.0.1 --port 8787 --reload",
+    "bot": "cd server && .venv/bin/python -m bot.worker",
+    "dune:sync": "cd server && .venv/bin/python sync_dune.py"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
