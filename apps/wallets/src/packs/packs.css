@@ -659,9 +659,58 @@ body {
 }
 
 /* tier foil colorways — white < purple < pink */
-.pack-skin-b { --pack-accent: #f7f2f5; }
-.pack-skin-a { --pack-accent: #a855f7; }
-.pack-skin-s { --pack-accent: #f23db8; }
+.pack-skin-b {
+  --pack-accent: #f4eef2;
+  --foil-top: #ffffff;
+  --foil-mid: #f0e6ec;
+  --foil-bot: #d8c4ce;
+}
+.pack-skin-a {
+  --pack-accent: #a855f7;
+  --foil-top: #e9d5ff;
+  --foil-mid: #a855f7;
+  --foil-bot: #6b21a8;
+}
+.pack-skin-s {
+  --pack-accent: #f23db8;
+  --foil-top: #ffd0ef;
+  --foil-mid: #f23db8;
+  --foil-bot: #9d176e;
+}
+
+.pack-css .pack-badge {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 28px rgba(18, 4, 12, 0.28);
+}
+
+.pack-css .pack-badge img {
+  object-fit: contain;
+  padding: 14%;
+}
+
+.pack-tier-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14%;
+  z-index: 6;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.pack-skin-b .pack-tier-label {
+  color: #7a5a6a;
+  text-shadow: none;
+}
 
 /* ---- sections ---- */
 .section-head { margin: 28px 0 16px; }

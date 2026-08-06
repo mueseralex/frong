@@ -17,15 +17,11 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      "/api/wallets": {
+      "/wallet-api": {
         target: process.env.VITE_PROXY_TARGET || "https://api.frong.ai",
         changeOrigin: true,
         secure: true,
-      },
-      "/api/summary": {
-        target: process.env.VITE_PROXY_TARGET || "https://api.frong.ai",
-        changeOrigin: true,
-        secure: true,
+        rewrite: (p) => p.replace(/^\/wallet-api/, ""),
       },
     },
   },

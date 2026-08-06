@@ -44,9 +44,8 @@ export const PACK_TIERS = [
     description:
       "Entry pack for scanning the board. Three AI-scored Robinhood wallets — mostly White pulls, with a real shot at Purple.",
     highlights: ["3 wallets", "Chase a Purple", "Best for volume scanning"],
-    accent: "#f7f2f5",
+    accent: "#f4eef2",
     oddsBoost: 0,
-    img: "/wallets/pack-art/b.png",
   },
   {
     id: "a",
@@ -61,7 +60,6 @@ export const PACK_TIERS = [
     highlights: ["4 wallets", "Boosted Purple / Pink", "Balanced chase pack"],
     accent: "#a855f7",
     oddsBoost: 0.16,
-    img: "/wallets/pack-art/a.png",
   },
   {
     id: "s",
@@ -77,7 +75,6 @@ export const PACK_TIERS = [
     accent: "#f23db8",
     oddsBoost: 0.32,
     guaranteedMin: "purple",
-    img: "/wallets/pack-art/s.png",
   },
 ];
 

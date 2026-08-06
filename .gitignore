@@ -16,3 +16,4 @@ venv/
 .DS_Store
 *.log
 .vite/
+dist-upload/

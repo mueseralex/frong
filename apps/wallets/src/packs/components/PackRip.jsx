@@ -194,7 +194,7 @@ export default function PackRip({ tier, pull, onDone, onClose }) {
                   </div>
                   <div className="seal-fly">
                     <div className="wax-seal wax-seal-logo">
-                      <img src="/newlogo.png" alt="" />
+                      <img src="/wallets/frong.svg" alt="" />
                     </div>
                   </div>
                 </>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <circle cx="60" cy="60" r="58" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+  <g stroke="#ff1f8f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- body -->
+    <path d="M38 72c2-18 14-30 30-30s28 12 30 30c1 10-4 20-14 24H52c-10-4-15-14-14-24z"/>
+    <!-- eyes -->
+    <circle cx="48" cy="48" r="8"/>
+    <circle cx="72" cy="48" r="8"/>
+    <circle cx="48" cy="48" r="2.2" fill="#ff1f8f" stroke="none"/>
+    <circle cx="72" cy="48" r="2.2" fill="#ff1f8f" stroke="none"/>
+    <!-- smile -->
+    <path d="M52 64c3 4 13 4 16 0"/>
+    <!-- left arm/leg -->
+    <path d="M40 78c-8 4-14 12-12 18"/>
+    <path d="M28 96h10"/>
+    <!-- right arm/leg -->
+    <path d="M80 78c8 4 14 12 12 18"/>
+    <path d="M82 96h10"/>
+  </g>
+</svg>

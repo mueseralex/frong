@@ -80,7 +80,7 @@ export default function PacksApp() {
               <p>{t.description || t.blurb}</p>
               <div className="tier-foot">
                 <span>{t.wallets} pulls</span>
-                {t.guaranteedMin && <span className="guarantee">Rare+ guaranteed</span>}
+                {t.guaranteedMin && <span className="guarantee">Purple+ guaranteed</span>}
               </div>
               <div className="tier-rip-row">
                 <span className="btn primary btn-coming-soon tier-rip-btn" aria-disabled="true">

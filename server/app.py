@@ -29,15 +29,19 @@ from config import (  # noqa: E402
     CORS_ORIGINS,
     DEV_AUTH,
     FRONG_SITE_URL,
+    PROCESS_API,
     SESSION_COOKIE,
     SESSION_DAYS,
+    WALLET_API,
 )
 from db import delete_session, get_chat, init_db, session_user  # noqa: E402
+from proxy import forward  # noqa: E402
 from tools.dune import activity_snapshot, cache_snapshot_file, upload_to_dune  # noqa: E402
 
 FRONTEND_URL = os.environ.get("FRONG_FRONTEND_URL", FRONG_SITE_URL).rstrip("/")
 DIST = Path(os.environ.get("FRONG_DIST", str(PROJECT / "dist")))
 WALLETS_DIST = Path(os.environ.get("FRONG_WALLETS_DIST", str(PROJECT / "dist-wallets")))
+UPLOAD_DIST = Path(os.environ.get("FRONG_UPLOAD_DIST", str(PROJECT / "dist-upload")))
 
 # Disable stock Swagger at /docs — that path redirects to the public wallet API reference.
 app = FastAPI(title="frong.ai", version="0.1.0", docs_url=None, redoc_url=None)
@@ -276,6 +280,52 @@ def terms():
     )
 
 
+@app.api_route("/wallet-api/{path:path}", methods=["GET", "OPTIONS"])
+async def wallet_api_proxy(path: str, request: Request):
+    """Browser-facing wallet DB proxy (avoids flaky api.* subdomain DNS)."""
+    return await forward(
+        request,
+        upstream_base=WALLET_API,
+        upstream_path=path,
+        allow_methods=("GET", "OPTIONS"),
+    )
+
+
+@app.api_route("/upload/api/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def upload_api_proxy(path: str, request: Request):
+    """Browser-facing process/batch proxy under /upload/api/*."""
+    return await forward(
+        request,
+        upstream_base=PROCESS_API,
+        upstream_path=f"api/{path}",
+        allow_methods=("GET", "POST", "OPTIONS"),
+        timeout=120.0,
+    )
+
+
+def _upload_file(rel: str) -> Path | None:
+    return _safe_file(UPLOAD_DIST, rel)
+
+
+@app.get("/upload")
+@app.get("/upload/")
+def upload_index():
+    index_path = _upload_file("index.html")
+    if index_path:
+        return FileResponse(index_path)
+    raise HTTPException(404, detail="upload UI not built")
+
+
+@app.get("/upload/{full_path:path}")
+def upload_static(full_path: str):
+    if full_path.startswith("api/"):
+        raise HTTPException(404)
+    asset = _upload_file(full_path)
+    if asset:
+        return FileResponse(asset)
+    raise HTTPException(404)
+
+
 @app.get("/database")
 @app.get("/database/")
 def redirect_database():
@@ -329,7 +379,20 @@ def index():
 def spa(full_path: str):
     """Serve Vite assets; fall back to index.html for client routes."""
     if full_path.startswith(
-        ("api/", "auth/", "health", "privacy", "terms", "wallets", "database", "packs", "docs", "api-docs")
+        (
+            "api/",
+            "auth/",
+            "health",
+            "privacy",
+            "terms",
+            "wallets",
+            "wallet-api",
+            "upload",
+            "database",
+            "packs",
+            "docs",
+            "api-docs",
+        )
     ):
         raise HTTPException(404)
     asset = _dist_file(full_path)

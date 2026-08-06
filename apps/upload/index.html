@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frong.ai — batch wallet checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/upload/frong.svg" />
+  <link rel="stylesheet" href="/upload/styles.css?v=3" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand brand-with-logo" href="/upload/"><img src="/upload/frong.svg" alt="" />frong.ai</a>
+      <span class="tagline">Batch wallet checker</span>
+      <a class="back-link" href="https://frong.ai/wallets/">&larr; Back to the table</a>
+    </header>
+
+    <section class="intro">
+      <h1>Check your own wallets</h1>
+      <p class="sub">
+        Paste up to 100 Robinhood-chain wallet addresses (or drop a .txt/.csv file)
+        and we'll pull fresh on-chain stats for every one — profit, winrate, FDV entry
+        insights and more — into a CSV you can download.
+      </p>
+    </section>
+
+    <div class="upload-grid">
+      <aside class="side-card recent-card">
+        <div class="side-card-head">
+          <div>
+            <span class="eyebrow">Community</span>
+            <h2>Recent batches</h2>
+          </div>
+          <span class="activity-pulse" title="Live activity"></span>
+        </div>
+        <div class="recent-list" id="recent-list">
+          <div class="recent-empty">Loading recent activity…</div>
+        </div>
+      </aside>
+
+      <main class="upload-column">
+        <div class="card">
+          <textarea id="input" placeholder="0x59050e6c37ed6bdd003966af9b061757c7f04757
+0x1234...  (one address per line — commas and extra text are fine, we'll find the addresses)"></textarea>
+          <label class="note-field" for="note">
+            <span>Optional public note</span>
+            <span class="note-count" id="note-count">0 / 80</span>
+          </label>
+          <input
+            class="note-input"
+            id="note"
+            type="text"
+            maxlength="80"
+            placeholder="e.g. wallets from this morning's launch"
+            autocomplete="off"
+          />
+          <div class="row">
+            <label class="file-label">Upload .txt / .csv
+              <input type="file" id="file" accept=".txt,.csv,text/plain,text/csv" />
+            </label>
+            <span class="count" id="count"><strong>0</strong> / 100 valid addresses</span>
+            <span class="spacer"></span>
+            <button class="btn" id="submit" disabled>Process wallets</button>
+          </div>
+          <div class="error" id="error" hidden></div>
+        </div>
+
+        <ul class="notes">
+          <li>No account needed — you'll get a link to track progress and download results.</li>
+          <li>Every wallet is looked up live and successful results join the public database.</li>
+          <li>One batch at a time per visitor; results are kept for 48 hours.</li>
+        </ul>
+      </main>
+
+      <aside class="side-card activity-card">
+        <span class="eyebrow">Last 24 hours</span>
+        <h2>Batch activity</h2>
+        <div class="activity-stats">
+          <div>
+            <strong id="stat-wallets">—</strong>
+            <span>Wallets submitted</span>
+          </div>
+          <div>
+            <strong id="stat-completed">—</strong>
+            <span>Batches completed</span>
+          </div>
+          <div>
+            <strong id="stat-active">—</strong>
+            <span>Active now</span>
+          </div>
+        </div>
+        <div class="live-log" id="live-log"></div>
+        <p class="side-copy">Every successful lookup helps grow the shared frong.ai database.</p>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const ADDR_RE = /0x[a-fA-F0-9]{40}/g;
+    const MAX = 100;
+    const input = document.getElementById("input");
+    const noteEl = document.getElementById("note");
+    const noteCountEl = document.getElementById("note-count");
+    const fileEl = document.getElementById("file");
+    const countEl = document.getElementById("count");
+    const submitEl = document.getElementById("submit");
+    const errorEl = document.getElementById("error");
+
+    function extract(text) {
+      const seen = new Set();
+      const out = [];
+      for (const m of text.matchAll(ADDR_RE)) {
+        const a = m[0];
+        if (!seen.has(a.toLowerCase())) { seen.add(a.toLowerCase()); out.push(a); }
+      }
+      return out;
+    }
+
+    function refresh() {
+      const addrs = extract(input.value);
+      countEl.innerHTML = `<strong>${addrs.length}</strong> / ${MAX} valid addresses`;
+      countEl.classList.toggle("over", addrs.length > MAX);
+      submitEl.disabled = addrs.length === 0 || addrs.length > MAX;
+      errorEl.hidden = true;
+      return addrs;
+    }
+
+    input.addEventListener("input", refresh);
+    noteEl.addEventListener("input", () => {
+      noteCountEl.textContent = `${noteEl.value.length} / 80`;
+    });
+
+    fileEl.addEventListener("change", () => {
+      const f = fileEl.files[0];
+      if (!f) return;
+      f.text().then((text) => {
+        input.value = input.value.trim() ? input.value.trim() + "\n" + text : text;
+        refresh();
+      });
+    });
+
+    input.addEventListener("dragover", (e) => { e.preventDefault(); input.classList.add("dragover"); });
+    input.addEventListener("dragleave", () => input.classList.remove("dragover"));
+    input.addEventListener("drop", (e) => {
+      e.preventDefault();
+      input.classList.remove("dragover");
+      const f = e.dataTransfer.files[0];
+      if (f) f.text().then((text) => {
+        input.value = input.value.trim() ? input.value.trim() + "\n" + text : text;
+        refresh();
+      });
+    });
+
+    submitEl.addEventListener("click", async () => {
+      const addrs = refresh();
+      if (!addrs.length || addrs.length > MAX) return;
+      submitEl.disabled = true;
+      submitEl.textContent = "Submitting…";
+      try {
+        const res = await fetch("/upload/api/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ addresses: addrs, note: noteEl.value.trim() || null }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "submission failed");
+        location.href = `/upload/job.html?id=${data.job_id}`;
+      } catch (e) {
+        errorEl.textContent = e.message;
+        errorEl.hidden = false;
+        submitEl.textContent = "Process wallets";
+        submitEl.disabled = false;
+      }
+    });
+
+    function timeAgo(timestamp) {
+      const seconds = Math.max(0, Date.now() / 1000 - timestamp);
+      if (seconds < 60) return "just now";
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      return `${Math.floor(seconds / 86400)}d ago`;
+    }
+
+    function renderRecent(batches) {
+      const list = document.getElementById("recent-list");
+      list.replaceChildren();
+      if (!batches.length) {
+        const empty = document.createElement("div");
+        empty.className = "recent-empty";
+        empty.textContent = "No batches yet — yours could be first.";
+        list.append(empty);
+        return;
+      }
+      for (const batch of batches) {
+        const item = document.createElement("div");
+        item.className = "recent-item";
+
+        const top = document.createElement("div");
+        top.className = "recent-item-top";
+        const count = document.createElement("strong");
+        count.textContent = `${batch.total} wallet${batch.total === 1 ? "" : "s"}`;
+        const when = document.createElement("span");
+        when.textContent = timeAgo(batch.created_at);
+        top.append(count, when);
+
+        const note = document.createElement("p");
+        note.textContent = batch.note || "Anonymous batch";
+
+        const status = document.createElement("div");
+        status.className = `recent-status ${batch.status}`;
+        const dot = document.createElement("span");
+        const text = document.createElement("span");
+        text.textContent = batch.status === "done"
+          ? batch.db_saved > 0
+            ? `${batch.db_saved} synced to database`
+            : "completed"
+          : batch.status === "processing"
+            ? `processing ${batch.done}/${batch.total}`
+            : "queued";
+        status.append(dot, text);
+        item.append(top, note, status);
+        list.append(item);
+      }
+    }
+
+    function renderLiveLog(batches) {
+      const log = document.getElementById("live-log");
+      log.replaceChildren();
+      for (const batch of batches.slice(0, 5)) {
+        const line = document.createElement("div");
+        const time = document.createElement("span");
+        time.textContent = timeAgo(batch.created_at);
+        const message = document.createElement("p");
+        message.textContent = batch.status === "done"
+          ? `${batch.total}-wallet batch completed`
+          : batch.status === "processing"
+            ? `${batch.done}/${batch.total} wallets processed`
+            : `${batch.total}-wallet batch queued`;
+        line.append(time, message);
+        log.append(line);
+      }
+    }
+
+    async function loadRecent() {
+      try {
+        const res = await fetch("/upload/api/recent");
+        if (!res.ok) return;
+        const data = await res.json();
+        renderRecent(data.batches || []);
+        renderLiveLog(data.batches || []);
+        document.getElementById("stat-wallets").textContent = (data.stats?.wallets_24h || 0).toLocaleString();
+        document.getElementById("stat-completed").textContent = (data.stats?.completed_24h || 0).toLocaleString();
+        document.getElementById("stat-active").textContent = (data.stats?.active || 0).toLocaleString();
+      } catch (_) {
+        // Keep the upload form fully usable if the activity feed is unavailable.
+      }
+    }
+
+    loadRecent();
+    setInterval(loadRecent, 15000);
+  </script>
+</body>
+</html>

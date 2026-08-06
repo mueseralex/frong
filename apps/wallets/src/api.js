@@ -1,6 +1,5 @@
-// Production build sets VITE_API_URL=https://api.frong.ai (wallet DB stays on the VM).
-// In local Vite, leave empty so /api/* proxies to the public API.
-const BASE = import.meta.env.VITE_API_URL || "";
+// Same-origin proxy on frong.ai — browsers never need api.* subdomain DNS.
+const BASE = import.meta.env.VITE_API_URL || "/wallet-api";
 
 export async function fetchWallets(params) {
   const qs = new URLSearchParams();

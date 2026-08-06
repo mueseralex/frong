@@ -1,56 +1,27 @@
 /**
- * Sealed pack — foil PNG with emblem only (copy lives in UI / inspect panel).
+ * Sealed pack — CSS foil skins (white / purple / pink). Frog seal only.
  */
 export default function PackArt({ tier, className = "" }) {
-  const img = tier.img;
-  const mask = img
-    ? {
-        WebkitMaskImage: `url('${img}')`,
-        maskImage: `url('${img}')`,
-        WebkitMaskSize: "contain",
-        maskSize: "contain",
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
-      }
-    : undefined;
-
-  if (img) {
-    return (
-      <div
-        className={`pack pack-has-img pack-skin-${tier.id} ${className}`}
-        style={{ "--pack-accent": tier.accent }}
-        aria-label={`${tier.shortName || tier.name} sealed pack`}
-      >
-        <img
-          className="pack-render"
-          src={img}
-          alt={`${tier.shortName || tier.name} pack`}
-          draggable={false}
-        />
-        <div className="pack-sheen" style={mask} aria-hidden />
-        <div className="wax-seal" aria-hidden>
-          <img src="/wallets/frong.svg" alt="" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={`pack pack-skin-${tier.id} ${className}`}
+      className={`pack pack-css pack-skin-${tier.id} ${className}`}
       style={{ "--pack-accent": tier.accent }}
+      aria-label={`${tier.shortName || tier.name} sealed pack`}
     >
       <div className="pack-shell">
         <div className="pack-crimp pack-crimp-top" aria-hidden />
         <div className="pack-crimp pack-crimp-bot" aria-hidden />
         <div className="pack-foil">
+          <div className="pack-foil-grain" aria-hidden />
+          <div className="pack-foil-sheen" aria-hidden />
+          <div className="pack-edge-hilite" aria-hidden />
           <div className="pack-badge">
             <img src="/wallets/frong.svg" alt="" />
           </div>
+          <div className="pack-tier-label">{tier.shortName || tier.name}</div>
         </div>
       </div>
+      <div className="pack-shadow" aria-hidden />
     </div>
   );
 }

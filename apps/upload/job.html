@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frong.ai — batch status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/upload/frong.svg" />
+  <link rel="stylesheet" href="/upload/styles.css?v=3" />
+</head>
+<body>
+  <div class="page job-page">
+    <header class="topbar">
+      <a class="brand brand-with-logo" href="/upload/"><img src="/upload/frong.svg" alt="" />frong.ai</a>
+      <span class="tagline">Batch wallet checker</span>
+      <a class="back-link" href="https://frong.ai/wallets/">&larr; Back to the table</a>
+    </header>
+
+    <h1>Your batch</h1>
+    <p class="sub">
+      Keep this page open (or bookmark it) — the link works for 48 hours.
+    </p>
+
+    <div class="card">
+      <div class="status-line">
+        <span class="dot" id="dot"></span>
+        <span id="status-text">Loading…</span>
+      </div>
+      <div class="progress" id="progress-wrap" hidden>
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-label" id="progress-label"></div>
+      <div class="row" id="actions" hidden>
+        <a class="btn" id="download" href="#">Download CSV</a>
+        <a class="btn ghost" href="/upload/">Run another batch</a>
+      </div>
+      <div class="error" id="error" hidden></div>
+      <div class="job-id" id="job-id"></div>
+    </div>
+  </div>
+
+  <script>
+    const jobId = new URLSearchParams(location.search).get("id");
+    const dot = document.getElementById("dot");
+    const statusText = document.getElementById("status-text");
+    const progressWrap = document.getElementById("progress-wrap");
+    const progressFill = document.getElementById("progress-fill");
+    const progressLabel = document.getElementById("progress-label");
+    const actions = document.getElementById("actions");
+    const errorEl = document.getElementById("error");
+
+    document.getElementById("job-id").textContent = jobId ? `job ${jobId}` : "";
+    if (jobId) document.getElementById("download").href = `/upload/api/download/${jobId}`;
+
+    let timer = null;
+
+    async function poll() {
+      try {
+        const res = await fetch(`/upload/api/status/${jobId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "lookup failed");
+
+        dot.className = "dot " + data.status;
+        errorEl.hidden = true;
+
+        if (data.status === "queued") {
+          statusText.textContent = data.queue_position > 0
+            ? `Queued — ${data.queue_position} batch${data.queue_position === 1 ? "" : "es"} ahead of you`
+            : "Queued — starting shortly";
+          progressWrap.hidden = true;
+          progressLabel.textContent = `${data.total} wallets waiting`;
+        } else if (data.status === "processing") {
+          statusText.textContent = "Processing — pulling live on-chain stats";
+          progressWrap.hidden = false;
+          const pct = data.total ? Math.round((data.done / data.total) * 100) : 0;
+          progressFill.style.width = pct + "%";
+          progressLabel.textContent = `${data.done} / ${data.total} wallets (${pct}%)`;
+        } else if (data.status === "done") {
+          statusText.textContent = "Done — your CSV is ready";
+          progressWrap.hidden = false;
+          progressFill.style.width = "100%";
+          progressLabel.textContent = `${data.total} / ${data.total} wallets`;
+          actions.hidden = false;
+          clearInterval(timer);
+        } else if (data.status === "error") {
+          statusText.textContent = "Something went wrong";
+          errorEl.textContent = data.error || "unknown error — please try again";
+          errorEl.hidden = false;
+          progressWrap.hidden = true;
+          progressLabel.textContent = "";
+          clearInterval(timer);
+        }
+      } catch (e) {
+        dot.className = "dot error";
+        statusText.textContent = "Batch not found";
+        errorEl.textContent = e.message;
+        errorEl.hidden = false;
+        clearInterval(timer);
+      }
+    }
+
+    if (!jobId) {
+      statusText.textContent = "No job id in the URL";
+      dot.className = "dot error";
+    } else {
+      poll();
+      timer = setInterval(poll, 2500);
+    }
+  </script>
+</body>
+</html>

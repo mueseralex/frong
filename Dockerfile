@@ -13,7 +13,8 @@ WORKDIR /app
 COPY apps/wallets/package.json apps/wallets/package-lock.json ./
 RUN npm ci
 COPY apps/wallets/ ./
-ENV VITE_API_URL=https://api.frong.ai
+# Same-origin /wallet-api proxy — browsers do not need api.* DNS.
+ENV VITE_API_URL=
 RUN npm run build
 
 FROM python:3.12-slim-bookworm
@@ -24,7 +25,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     FRONG_DATA_DIR=/data \
     FRONG_DEV_AUTH=0 \
     FRONG_DIST=/app/dist \
-    FRONG_WALLETS_DIST=/app/dist-wallets
+    FRONG_WALLETS_DIST=/app/dist-wallets \
+    FRONG_UPLOAD_DIST=/app/dist-upload
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/*
@@ -35,6 +37,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY server ./server
 COPY --from=ui-chat /app/dist ./dist
 COPY --from=ui-wallets /app/dist ./dist-wallets
+COPY apps/upload ./dist-upload
 
 RUN mkdir -p /data
 
