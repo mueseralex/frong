@@ -64,9 +64,12 @@ async def forward(
     headers = {
         k: v
         for k, v in request.headers.items()
-        if k.lower() not in HOP_BY_HOP and k.lower() != "cookie"
+        if k.lower() not in HOP_BY_HOP
+        and k.lower() not in {"cookie", "accept-encoding"}
     }
     headers["accept"] = request.headers.get("accept", "*/*")
+    # Ask upstream for plain bytes; we always return decompressed bodies.
+    headers["accept-encoding"] = "identity"
     body = await request.body()
 
     upstream: httpx.Response | None = None
