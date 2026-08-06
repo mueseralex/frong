@@ -170,12 +170,25 @@ async def analyze_wallets(
             by_addr[str(w.get("address", "")).lower()] = w
         merged = list(by_addr.values())
         ranked = rank_wallets(merged, top_n=min(15, len(merged)))
+        # Attach verdicts onto compact wallet rows for the model.
+        by = {r["address"].lower(): r for r in ranked if r.get("address")}
+        wallets_out = []
+        for w in merged:
+            c = compact_wallet(w)
+            extra = by.get(c["address"].lower())
+            if extra:
+                c["score"] = extra.get("score")
+                c["track"] = extra.get("track")
+                c["verdict"] = extra.get("verdict")
+                c["rank"] = extra.get("rank")
+            wallets_out.append(c)
         return {
             "ok": True,
             "tool": "analyze_wallets",
             "count": len(merged),
             "job_id": job_id,
-            "wallets": [compact_wallet(w) for w in merged],
+            "wallets": wallets_out,
             "ranked": ranked,
             "track": [r for r in ranked if r.get("track")],
+            "skip": [r for r in ranked if r.get("verdict") == "NO"],
         }

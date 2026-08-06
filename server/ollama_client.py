@@ -15,7 +15,7 @@ async def stream_chat(
     messages: list[dict[str, str]],
     *,
     model: str | None = None,
-    temperature: float = 0.35,
+    temperature: float = 0.4,
 ) -> AsyncIterator[str]:
     payload = {
         "model": model or FRONG_MODEL,
@@ -23,8 +23,8 @@ async def stream_chat(
         "stream": True,
         "options": {
             "temperature": temperature,
-            "top_p": 0.85,
-            "repeat_penalty": 1.1,
+            "top_p": 0.9,
+            "repeat_penalty": 1.12,
         },
     }
     async with httpx.AsyncClient(timeout=None) as client:
@@ -56,7 +56,7 @@ async def complete(
     messages: list[dict[str, str]],
     *,
     model: str | None = None,
-    temperature: float = 0.35,
+    temperature: float = 0.4,
 ) -> str:
     parts: list[str] = []
     async for p in stream_chat(messages, model=model, temperature=temperature):
@@ -68,8 +68,16 @@ def with_system(
     history: list[dict[str, Any]],
     user_text: str,
     tool_block: str | None = None,
+    *,
+    handle: str | None = None,
+    capability_hint: str | None = None,
 ) -> list[dict[str, str]]:
-    msgs: list[dict[str, str]] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    system = SYSTEM_PROMPT
+    if handle:
+        system = f"{system}\n\nThe user is signed in as @{handle.lstrip('@')}."
+    if capability_hint:
+        system = f"{system}\n\n{capability_hint}"
+    msgs: list[dict[str, str]] = [{"role": "system", "content": system}]
     for m in history:
         role = m.get("role")
         content = m.get("content")
@@ -78,7 +86,8 @@ def with_system(
     final_user = user_text
     if tool_block:
         final_user = (
-            f"{user_text}\n\nTOOL_RESULT (use only these numbers; never invent):\n"
+            f"{user_text}\n\nTOOL_RESULT (use ONLY these numbers; cite winrate_30d, "
+            f"total_profit / realized_profit_30d, buy_30d, sell_30d when present):\n"
             f"{tool_block}"
         )
     msgs.append({"role": "user", "content": final_user})

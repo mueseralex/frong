@@ -25,8 +25,11 @@ EMOJI_RE = re.compile(
 )
 
 
-def scrub(text: str) -> str:
-    return EMOJI_RE.sub("", text or "").strip()
+def scrub(text: str, *, trim: bool = False) -> str:
+    """Remove emoji/decorative unicode. Do not strip by default — streaming
+    chunks often start with a leading space that must be preserved."""
+    out = EMOJI_RE.sub("", text or "")
+    return out.strip() if trim else out
 
 
 async def run_tools_for_message(
@@ -90,6 +93,8 @@ async def run_tools_for_message(
 async def chat_turn(
     x_user_id: str,
     user_text: str,
+    *,
+    handle: str | None = None,
 ) -> AsyncIterator[dict[str, Any]]:
     """Yield SSE-ish dict events: status | report | token | done | error."""
     if not check_rate(f"chat:{x_user_id}", CHAT_RATE_PER_MIN, 60):
@@ -114,7 +119,7 @@ async def chat_turn(
 
     tool_block = None
     if report is not None:
-        # Compact for the model
+        # Compact for the model — include wallet rows so it can cite winrate/PnL/txns.
         slim = {
             k: report[k]
             for k in (
@@ -125,8 +130,10 @@ async def chat_turn(
                 "prefix_ca",
                 "trader_count",
                 "count",
+                "wallets",
                 "ranked",
                 "track",
+                "skip",
                 "recent_events",
                 "migrations_covered",
                 "analyses",
@@ -137,10 +144,55 @@ async def chat_turn(
             )
             if k in report
         }
+        # Cap wallet rows so the prompt stays small.
+        if isinstance(slim.get("wallets"), list) and len(slim["wallets"]) > 12:
+            slim["wallets"] = slim["wallets"][:12]
+        if isinstance(slim.get("ranked"), list) and len(slim["ranked"]) > 12:
+            slim["ranked"] = slim["ranked"][:12]
         tool_block = json.dumps(slim, ensure_ascii=True)
-        yield {"type": "report", "report": slim}
+        yield {"type": "report", "report": {
+            k: slim[k]
+            for k in ("tool", "ranked", "track", "ca", "ok", "error", "count", "prefix_ca")
+            if k in slim
+        }}
 
-    messages = with_system(history, text, tool_block)
+    # If they ask about stats/capabilities without an address, tell the model clearly
+    # so it does not invent a "I can't provide winrate" refusal.
+    capability_hint = None
+    if report is None and not extract_addresses(text):
+        low = text.lower()
+        if any(
+            w in low
+            for w in (
+                "winrate",
+                "win rate",
+                "pnl",
+                "profit",
+                "transaction",
+                "txn",
+                "stats",
+                "analy",
+                "what can you",
+                "how do you",
+                "database",
+                "data",
+            )
+        ):
+            capability_hint = (
+                "CAPABILITY: You pull Robinhood-chain wallet stats from our DB/tools "
+                "(winrate_30d, total_profit, realized_profit_30d, buy_30d, sell_30d, "
+                "token_num, fast_trades_percentage, early entries, multipliers). "
+                "You happily report those after a 0x wallet or CA is provided. "
+                "Do not refuse winrate/PnL. Ask for the address once if they want numbers now."
+            )
+
+    messages = with_system(
+        history,
+        text,
+        tool_block,
+        handle=handle,
+        capability_hint=capability_hint,
+    )
     parts: list[str] = []
     try:
         async for piece in stream_chat(messages):
@@ -150,7 +202,7 @@ async def chat_turn(
         yield {"type": "error", "error": str(e)}
         return
 
-    assistant = scrub("".join(parts))
+    assistant = scrub("".join(parts), trim=True)
     history.append({"role": "user", "content": text})
     history.append({"role": "assistant", "content": assistant, "report": report})
     save_chat(x_user_id, history)

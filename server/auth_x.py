@@ -6,7 +6,7 @@ import base64
 import hashlib
 import secrets
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import httpx
 
@@ -32,7 +32,10 @@ def oauth_configured() -> bool:
 
 
 def _pkce() -> tuple[str, str]:
-    verifier = secrets.token_urlsafe(64)[:128]
+    # X requires 43–128 chars from the unreserved set; token_urlsafe fits.
+    verifier = secrets.token_urlsafe(64)
+    if len(verifier) > 128:
+        verifier = verifier[:128]
     challenge = (
         base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest())
         .decode()
@@ -48,16 +51,17 @@ def begin_login() -> tuple[str, str]:
     verifier, challenge = _pkce()
     state = secrets.token_urlsafe(24)
     _pending[state] = {"verifier": verifier}
+    # Use %20 for scopes (not +). X is picky about authorize query encoding.
     params = {
         "response_type": "code",
         "client_id": X_CLIENT_ID,
         "redirect_uri": X_CALLBACK_URL,
-        "scope": X_SCOPES,
+        "scope": " ".join(X_SCOPES.split()),
         "state": state,
         "code_challenge": challenge,
         "code_challenge_method": "S256",
     }
-    return f"{AUTH_URL}?{urlencode(params)}", state
+    return f"{AUTH_URL}?{urlencode(params, quote_via=quote)}", state
 
 
 async def finish_login(code: str, state: str) -> str:
@@ -114,3 +118,4 @@ def public_user(user: dict[str, Any] | None) -> dict[str, Any] | None:
         "name": user.get("name"),
         "avatar_url": user.get("avatar_url"),
     }
+

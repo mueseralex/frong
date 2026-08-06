@@ -25,42 +25,72 @@
     </div>
 
     <div id="app">
-      <section id="gate" class="gate hidden">
-        <p class="gate-title">frong.ai</p>
-        <p class="gate-copy">Sign in with X to talk to Frong.</p>
-        <a class="btn-x" id="login-x" href="/auth/x">Continue with X</a>
-        <button type="button" class="btn-dev hidden" id="login-dev">Dev login</button>
-      </section>
-
-      <section id="panel" class="panel hidden">
-        <div class="panel-bar">
-          <span class="whoami" id="whoami"></span>
-          <button type="button" class="linkish" id="logout">Log out</button>
-        </div>
-        <main id="term" class="term" aria-label="Frong chat"></main>
-        <form id="composer" class="composer" autocomplete="off">
-          <input
-            id="input"
-            name="message"
-            type="text"
-            spellcheck="false"
-            autocomplete="off"
-            placeholder="Message frong — paste a wallet or CA"
-            autofocus
-          />
-          <button type="submit" class="send" aria-label="Send">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <div class="stage">
+        <section id="gate" class="gate hidden">
+          <p class="gate-title">frong.ai</p>
+          <p class="gate-copy">A funny frog with a desk-analyst brain. Sign in with X to talk.</p>
+          <a class="btn-x" id="login-x" href="/auth/x">
+            <svg class="x-mark" viewBox="0 0 24 24" aria-hidden="true">
               <path
-                d="M5 12h12M13 6l6 6-6 6"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                fill="currentColor"
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
               />
             </svg>
-          </button>
-        </form>
-      </section>
+            Continue with X
+          </a>
+        </section>
+
+        <section id="panel" class="panel hidden">
+          <div class="panel-bar">
+            <span class="whoami" id="whoami"></span>
+            <button type="button" class="linkish" id="logout">Log out</button>
+          </div>
+          <main id="term" class="term" aria-label="Frong chat"></main>
+          <form id="composer" class="composer" autocomplete="off">
+            <input
+              id="input"
+              name="message"
+              type="text"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="Paste a wallet or CA — or just ask"
+              autofocus
+            />
+            <button type="submit" class="send" aria-label="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M5 12h12M13 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
+        </section>
+
+        <aside class="dock" aria-label="frong.ai tools">
+          <p class="dock-title">Open</p>
+          <a class="dock-link" href="/wallets/">Database</a>
+          <a class="dock-link" href="/wallets/packs/">Packs</a>
+          <a class="dock-link" href="/wallets/api/">API</a>
+          <a
+            class="dock-link"
+            href="https://process.hoodwallets.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Upload CAs</a
+          >
+          <a
+            class="dock-link dock-x"
+            href="https://x.com/frong_ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            >@frong_ai</a
+          >
+        </aside>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

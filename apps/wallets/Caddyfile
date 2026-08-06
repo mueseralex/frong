@@ -1,0 +1,44 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8
+	}
+}
+
+:{$PORT:80} {
+	log {
+		format json
+	}
+
+	respond /health 200
+
+	header {
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	root * dist
+	encode gzip
+
+	# Clean URLs — old .html bookmarks redirect without the extension
+	redir /api.html /api permanent
+
+	# Packs page is not public yet — block direct loads too
+	@packsBlocked path_regexp ^/packs(/.*)?$
+	redir @packsBlocked /
+
+	# Prefer real files / directory indexes before SPA fallback
+	try_files {path} {path}/ {path}.html {path}/index.html /index.html
+
+	file_server {
+		hide .git
+		hide .env*
+	}
+}

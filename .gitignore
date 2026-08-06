@@ -1,5 +1,8 @@
 node_modules/
 dist/
+dist-wallets/
+apps/wallets/dist/
+apps/wallets/node_modules/
 .server/
 server/data/
 server/.env

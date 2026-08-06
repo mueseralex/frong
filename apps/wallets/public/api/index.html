@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frong.ai API Reference</title>
+  <meta name="description" content="frong.ai public API reference." />
+  <link rel="icon" type="image/png" href="/frong.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/wallets/api.css?v=5" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/wallets/frong.svg" alt="" />frong.ai</a>
+    <span class="product">API Docs</span>
+    <div class="top-actions">
+      <a href="/">Chat</a>
+      <a href="/wallets/">Database</a>
+      <a href="/wallets/packs/">Packs</a>
+      <a href="https://process.hoodwallets.com" target="_blank" rel="noopener noreferrer">Upload</a>
+      <a href="https://x.com/frong_ai" target="_blank" rel="noopener noreferrer">@frong_ai</a>
+      <button class="button" id="copy-ai-guide">Copy reference</button>
+    </div>
+  </header>
+
+  <div class="docs-shell">
+    <aside class="sidebar">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+        <input id="doc-search" type="search" placeholder="Search endpoints" />
+      </label>
+      <nav>
+        <div class="nav-group">
+          <span>Getting started</span>
+          <a href="#overview" class="active">Overview</a>
+          <a href="#quickstart">Quick start</a>
+        </div>
+        <div class="nav-group">
+          <span>Database API</span>
+          <a href="#list-wallets">List wallets</a>
+          <a href="#get-wallet">Get wallet</a>
+          <a href="#summary">Summary</a>
+          <a href="#fields">Fields</a>
+        </div>
+        <div class="nav-group">
+          <span>Processing API</span>
+          <a href="#submit-batch">Submit batch</a>
+          <a href="#job-status">Job status</a>
+          <a href="#results">Results</a>
+        </div>
+        <div class="nav-group">
+          <span>Reference</span>
+          <a href="#parameters">Parameters</a>
+          <a href="#recipes">Recipes</a>
+          <a href="#limits">Limits and errors</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section id="overview" class="doc-section overview">
+        <div class="title-row">
+          <div>
+            <span class="version">API v1</span>
+            <h1>frong.ai API</h1>
+          </div>
+          <span class="status"><i></i>Operational</span>
+        </div>
+        <p class="lead">Read wallet statistics from the public database or submit wallets for fresh processing. No API key is required.</p>
+        <div class="base-urls">
+          <div><span>Database</span><code>https://api.hoodwallets.com</code><button class="inline-copy">Copy</button></div>
+          <div><span>Processing</span><code>https://process.hoodwallets.com</code><button class="inline-copy">Copy</button></div>
+        </div>
+      </section>
+
+      <section id="quickstart" class="doc-section">
+        <h2>Quick start</h2>
+        <p>Fetch 25 wallets with at least $10,000 profit and a 60% win rate.</p>
+        <div class="code-block">
+          <div><span>cURL</span><button class="copy-code">Copy</button></div>
+          <pre><code>curl "https://api.hoodwallets.com/v1/wallets?per_page=25&amp;min_profit=10000&amp;min_winrate=60&amp;fields=address,total_profit,winrate_30d"</code></pre>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <div class="section-label">Database API</div>
+        <h2>Stored wallet data</h2>
+        <p>Responses are JSON. List requests support pagination, projection, sorting, and filters.</p>
+
+        <details class="api-item" id="list-wallets" open>
+          <summary>
+            <span class="method get">GET</span>
+            <code>/v1/wallets</code>
+            <span class="summary-text">List and filter wallets</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body">
+            <p>Returns a paginated wallet collection and pagination metadata.</p>
+            <div class="compact-example">
+              <code>GET /v1/wallets?sort_by=total_profit&amp;order=desc&amp;fdv_only=true</code>
+              <button class="inline-copy">Copy</button>
+            </div>
+            <a class="text-link" href="#parameters">View all query parameters →</a>
+          </div>
+        </details>
+
+        <details class="api-item" id="get-wallet">
+          <summary>
+            <span class="method get">GET</span>
+            <code>/v1/wallets/{address}</code>
+            <span class="summary-text">Get one wallet</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body">
+            <p>Returns the latest stored snapshot for one exact 0x address. Returns 404 if it is not stored.</p>
+            <div class="compact-example">
+              <code>GET /v1/wallets/0x59050e6c37ed6bdd003966af9b061757c7f04757?fields=address,total_profit</code>
+              <button class="inline-copy">Copy</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="api-item" id="summary">
+          <summary>
+            <span class="method get">GET</span>
+            <code>/v1/summary</code>
+            <span class="summary-text">Database totals and freshness</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body"><p>Returns total wallets, FDV-enriched wallets, profitable wallets, and the latest update timestamp.</p></div>
+        </details>
+
+        <details class="api-item" id="fields">
+          <summary>
+            <span class="method get">GET</span>
+            <code>/v1/fields</code>
+            <span class="summary-text">Field catalog</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body"><p>Returns every public field with its type, description, and sorting/filtering support.</p></div>
+        </details>
+      </section>
+
+      <section class="doc-section">
+        <div class="section-label">Processing API</div>
+        <h2>Fresh wallet processing</h2>
+        <p>Processing is asynchronous. Submit a batch, poll its job, then retrieve results.</p>
+
+        <details class="api-item" id="submit-batch" open>
+          <summary>
+            <span class="method post">POST</span>
+            <code>/api/v1/batches</code>
+            <span class="summary-text">Submit 1–100 wallets</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body">
+            <div class="code-block nested">
+              <div><span>JSON body</span><button class="copy-code">Copy</button></div>
+              <pre><code>{
+  "addresses": ["0x59050e6c37ed6bdd003966af9b061757c7f04757"],
+  "note": "optional public note"
+}</code></pre>
+            </div>
+            <p>Returns <code>{"job_id":"UUID","total":1}</code>.</p>
+          </div>
+        </details>
+
+        <details class="api-item" id="job-status">
+          <summary>
+            <span class="method get">GET</span>
+            <code>/api/v1/batches/{job_id}</code>
+            <span class="summary-text">Check status and progress</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body"><p>Poll every 2–5 seconds. Status is <code>queued</code>, <code>processing</code>, <code>done</code>, or <code>error</code>.</p></div>
+        </details>
+
+        <details class="api-item" id="results">
+          <summary>
+            <span class="method get">GET</span>
+            <code>/api/v1/batches/{job_id}/results</code>
+            <span class="summary-text">Get JSON or CSV results</span>
+            <span class="chevron">›</span>
+          </summary>
+          <div class="api-body">
+            <p>Use <code>/results</code> for JSON or <code>/results.csv</code> for a downloadable CSV.</p>
+            <div class="note"><strong>Keep job IDs private.</strong> The ID grants access to that batch’s results.</div>
+          </div>
+        </details>
+      </section>
+
+      <section id="parameters" class="doc-section">
+        <h2>Query parameters</h2>
+        <div class="reference-groups">
+          <details open>
+            <summary>Pagination and output <span>6 parameters</span></summary>
+            <div class="param-list">
+              <div><code>page</code><span>integer · default 1</span><p>Page number.</p></div>
+              <div><code>per_page</code><span>integer · default 50</span><p>Rows per page; maximum 250.</p></div>
+              <div><code>sort_by</code><span>field · total_profit</span><p>Any field from <code>/v1/fields</code>.</p></div>
+              <div><code>order</code><span>asc | desc</span><p>Sort direction.</p></div>
+              <div><code>fields</code><span>CSV</span><p>Fields to include in each wallet.</p></div>
+              <div><code>search</code><span>string</span><p>Partial address search.</p></div>
+            </div>
+          </details>
+          <details>
+            <summary>Profit and win rate <span>4 parameters</span></summary>
+            <div class="param-list">
+              <div><code>min_profit</code><span>number</span><p>Minimum total profit.</p></div>
+              <div><code>max_profit</code><span>number</span><p>Maximum total profit.</p></div>
+              <div><code>min_winrate</code><span>0–100</span><p>Minimum 30-day win rate.</p></div>
+              <div><code>max_winrate</code><span>0–100</span><p>Maximum 30-day win rate.</p></div>
+            </div>
+          </details>
+          <details>
+            <summary>Additional filters <span>5 parameters</span></summary>
+            <div class="param-list">
+              <div><code>fdv_only</code><span>boolean</span><p>Require FDV enrichment.</p></div>
+              <div><code>min_tokens</code><span>integer</span><p>Minimum analyzed tokens.</p></div>
+              <div><code>max_tokens</code><span>integer</span><p>Maximum analyzed tokens.</p></div>
+              <div><code>updated_since</code><span>ISO 8601</span><p>Only recently updated records.</p></div>
+              <div><code>filters</code><span>JSON</span><p>Advanced numeric ranges by field.</p></div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section id="recipes" class="doc-section">
+        <h2>Recipes</h2>
+        <div class="recipe-list">
+          <details>
+            <summary>Build a wallet leaderboard</summary>
+            <div class="api-body"><code>GET /v1/wallets?sort_by=total_profit&amp;order=desc&amp;fields=address,total_profit,winrate_30d</code></div>
+          </details>
+          <details>
+            <summary>Sync recently updated wallets</summary>
+            <div class="api-body"><code>GET /v1/wallets?updated_since=2026-07-29T00:00:00Z&amp;page=1&amp;per_page=250</code></div>
+          </details>
+          <details>
+            <summary>Enrich a private wallet list</summary>
+            <div class="api-body"><p>POST a batch, poll the returned job ID until <code>done</code>, then fetch <code>/results</code>.</p></div>
+          </details>
+        </div>
+      </section>
+
+      <section id="limits" class="doc-section">
+        <h2>Limits and errors</h2>
+        <div class="limits">
+          <div><strong>120/min</strong><span>Database requests per IP</span></div>
+          <div><strong>250</strong><span>Maximum rows per request</span></div>
+          <div><strong>100</strong><span>Maximum wallets per batch</span></div>
+          <div><strong>48h</strong><span>Batch result retention</span></div>
+        </div>
+        <div class="error-list">
+          <span><code>400</code> Invalid parameters or body</span>
+          <span><code>404</code> Wallet or job not found</span>
+          <span><code>409</code> Results requested before completion</span>
+          <span><code>429</code> Rate limit or active-job restriction</span>
+          <span><code>503</code> Processing queue full</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">Copied</div>
+  <script src="/wallets/api.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
+
+export default defineConfig({
+  base: "/wallets/",
+  plugins: [react()],
+  appType: "mpa",
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        packs: resolve(__dirname, "packs/index.html"),
+      },
+    },
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      "/api/wallets": {
+        target: process.env.VITE_PROXY_TARGET || "https://api.hoodwallets.com",
+        changeOrigin: true,
+        secure: true,
+      },
+      "/api/summary": {
+        target: process.env.VITE_PROXY_TARGET || "https://api.hoodwallets.com",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
+});

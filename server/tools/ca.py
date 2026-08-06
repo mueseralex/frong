@@ -7,9 +7,8 @@ from typing import Any
 
 import httpx
 
-from config import CA_TRADER_LIMIT, GMGN_BEARER, GMGN_CHAIN
+from config import CA_TRADER_LIMIT, GMGN_BEARER, GMGN_CHAIN, SCRAPE_API, SCRAPE_SECRET
 from tools.wallets import analyze_wallets
-
 CA_RE = re.compile(r"0x[a-fA-F0-9]{40}")
 
 
@@ -45,6 +44,30 @@ def looks_like_ca_request(text: str) -> str | None:
 async def fetch_top_traders(ca: str, limit: int = CA_TRADER_LIMIT) -> list[str]:
     if not CA_RE.fullmatch(ca):
         raise ValueError("invalid ca")
+
+    # Prefer the process-VM scrape worker (shared minter JWT) so Railway never
+    # needs a long-lived FRONG_GMGN_BEARER.
+    if SCRAPE_SECRET:
+        headers = {
+            "User-Agent": "frong.ai/1.0",
+            "Accept": "application/json",
+            "X-Frong-Key": SCRAPE_SECRET,
+        }
+        async with httpx.AsyncClient(headers=headers, follow_redirects=True) as client:
+            r = await client.post(
+                f"{SCRAPE_API}/api/frong/traders",
+                json={"ca": ca, "limit": limit},
+                timeout=40.0,
+            )
+            if r.status_code == 503:
+                raise RuntimeError("scrape worker token refreshing — try again shortly")
+            r.raise_for_status()
+            body = r.json()
+            addrs = body.get("addresses") or [
+                t.get("address") for t in (body.get("traders") or []) if t.get("address")
+            ]
+            return [a for a in addrs if a][:limit]
+
     url = (
         f"https://gmgn.ai/vas/api/v1/token_traders/{GMGN_CHAIN}/{ca}"
         f"?limit={limit}&orderby=profit&direction=desc"
@@ -61,7 +84,8 @@ async def fetch_top_traders(ca: str, limit: int = CA_TRADER_LIMIT) -> list[str]:
         r = await client.get(url, timeout=25.0)
         if r.status_code in (401, 403) and not GMGN_BEARER:
             raise RuntimeError(
-                "GMGN blocked trader pull — set FRONG_GMGN_BEARER on the Frong server"
+                "GMGN blocked trader pull — set FRONG_SCRAPE_SECRET (preferred) "
+                "or FRONG_GMGN_BEARER on the Frong server"
             )
         r.raise_for_status()
         body = r.json()
@@ -69,7 +93,6 @@ async def fetch_top_traders(ca: str, limit: int = CA_TRADER_LIMIT) -> list[str]:
             raise RuntimeError(body.get("message") or "gmgn traders error")
         traders = (body.get("data") or {}).get("list") or []
         return [t["address"] for t in traders if t.get("address")][:limit]
-
 
 async def analyze_ca(ca: str, limit: int = CA_TRADER_LIMIT) -> dict[str, Any]:
     ca = ca.strip()

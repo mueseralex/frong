@@ -6,14 +6,18 @@ const term = document.getElementById("term");
 const form = document.getElementById("composer");
 const input = document.getElementById("input");
 const whoami = document.getElementById("whoami");
-const loginDev = document.getElementById("login-dev");
 const logoutBtn = document.getElementById("logout");
 
 const EMOJI_RE =
   /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu;
 
-function scrub(text) {
-  return String(text || "").replace(EMOJI_RE, "").trim();
+const WELCOME =
+  "Frong hopped on. We can talk shop, roast a launchpad thesis, or dig into a wallet when you are ready — your call.";
+
+function scrub(text, { trim = false } = {}) {
+  // Don't trim by default — streamed tokens often begin with a space.
+  const out = String(text || "").replace(EMOJI_RE, "");
+  return trim ? out.trim() : out;
 }
 
 function money(n) {
@@ -48,6 +52,11 @@ function setBody(el, text, { typing = false } = {}) {
   body.textContent = text;
   body.classList.toggle("typing", typing);
   term.scrollTop = term.scrollHeight;
+}
+
+function ensureWelcome() {
+  if (term.children.length) return;
+  addLine("bot", WELCOME);
 }
 
 function renderReport(report) {
@@ -97,7 +106,6 @@ function renderReport(report) {
 async function loadSession() {
   const res = await fetch("/api/me", { credentials: "include" });
   const data = await res.json();
-  if (data.dev_auth) loginDev.classList.remove("hidden");
   if (!data.user) {
     gate.classList.remove("hidden");
     panel.classList.add("hidden");
@@ -121,6 +129,7 @@ async function loadHistory() {
       if (m.report) renderReport(m.report);
     }
   }
+  ensureWelcome();
 }
 
 async function sendMessage(text) {
@@ -177,6 +186,7 @@ async function sendMessage(text) {
       if (ev.type === "cleared") {
         term.innerHTML = "";
         full = "";
+        ensureWelcome();
       }
       if (ev.type === "error") {
         setBody(botEl, "", { typing: false });
@@ -212,16 +222,6 @@ logoutBtn.addEventListener("click", async () => {
   await fetch("/auth/logout", { method: "POST", credentials: "include" });
   term.innerHTML = "";
   await loadSession();
-});
-
-loginDev.addEventListener("click", async () => {
-  const res = await fetch("/auth/dev", { method: "POST", credentials: "include" });
-  if (!res.ok) {
-    addLine("err", "Dev login failed");
-    return;
-  }
-  await loadSession();
-  await loadHistory();
 });
 
 async function boot() {

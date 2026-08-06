@@ -9,7 +9,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parent
@@ -37,8 +37,10 @@ from tools.dune import activity_snapshot, cache_snapshot_file, upload_to_dune  #
 
 FRONTEND_URL = os.environ.get("FRONG_FRONTEND_URL", FRONG_SITE_URL).rstrip("/")
 DIST = Path(os.environ.get("FRONG_DIST", str(PROJECT / "dist")))
+WALLETS_DIST = Path(os.environ.get("FRONG_WALLETS_DIST", str(PROJECT / "dist-wallets")))
 
-app = FastAPI(title="frong.ai", version="0.1.0")
+# Disable stock Swagger at /docs — that path redirects to the public wallet API reference.
+app = FastAPI(title="frong.ai", version="0.1.0", docs_url=None, redoc_url=None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -76,7 +78,14 @@ class ChatIn(BaseModel):
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "service": "frong.ai"}
+    # Tiny OAuth fingerprint so we can confirm which Client ID is live (not secret).
+    from config import X_CLIENT_ID
+
+    return {
+        "ok": True,
+        "service": "frong.ai",
+        "oauth_id_mark": (X_CLIENT_ID[8:16] if len(X_CLIENT_ID) >= 16 else None),
+    }
 
 
 @app.get("/api/me")
@@ -157,7 +166,11 @@ async def chat(request: Request, body: ChatIn) -> StreamingResponse:
         raise HTTPException(401, "login required")
 
     async def gen():
-        async for ev in chat_turn(user["x_user_id"], body.message):
+        async for ev in chat_turn(
+            user["x_user_id"],
+            body.message,
+            handle=user.get("handle"),
+        ):
             yield f"data: {json.dumps(ev, ensure_ascii=True)}\n\n"
 
     return StreamingResponse(
@@ -188,17 +201,120 @@ async def dune_sync(request: Request) -> dict:
     return await upload_to_dune()
 
 
-def _dist_file(rel: str) -> Path | None:
-    if not DIST.is_dir():
+def _safe_file(root: Path, rel: str) -> Path | None:
+    if not root.is_dir():
         return None
-    candidate = (DIST / rel).resolve()
+    candidate = (root / rel).resolve()
     try:
-        candidate.relative_to(DIST.resolve())
+        candidate.relative_to(root.resolve())
     except ValueError:
         return None
     if candidate.is_file():
         return candidate
     return None
+
+
+def _dist_file(rel: str) -> Path | None:
+    return _safe_file(DIST, rel)
+
+
+def _wallets_file(rel: str) -> Path | None:
+    return _safe_file(WALLETS_DIST, rel)
+
+
+def _wallets_response(rel: str = "") -> FileResponse | None:
+    rel = rel.strip("/")
+    if rel:
+        asset = _wallets_file(rel)
+        if asset:
+            return FileResponse(asset)
+        # SPA/MPA fallbacks: /wallets/packs → packs/index.html
+        nested = _wallets_file(f"{rel}/index.html")
+        if nested:
+            return FileResponse(nested)
+        return None
+    index_path = _wallets_file("index.html")
+    return FileResponse(index_path) if index_path else None
+
+
+def _legal_page(title: str, body: str) -> HTMLResponse:
+    html = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{title} — frong.ai</title>
+<style>
+body{{font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem;line-height:1.5;color:#111;background:#fff}}
+a{{color:#111}}
+</style></head><body>
+<p><a href="/">frong.ai</a></p>
+<h1>{title}</h1>
+{body}
+</body></html>"""
+    return HTMLResponse(html)
+
+
+@app.get("/privacy")
+def privacy():
+    return _legal_page(
+        "Privacy Policy",
+        """
+<p>Frong (frong.ai) lets you sign in with X so we can create a session and personalize chat.</p>
+<p>When you sign in with X we receive your X user id, username, display name, and profile image. We store these for your account/session. We do not sell X data.</p>
+<p>Chat messages and analysis requests may be stored to provide the product. Contact: via @frong_ai on X.</p>
+""",
+    )
+
+
+@app.get("/terms")
+def terms():
+    return _legal_page(
+        "Terms of Service",
+        """
+<p>Frong is an experimental chat tool for wallet/contract analysis on Robinhood chain. It is not financial advice.</p>
+<p>You are responsible for how you use outputs. We may change or discontinue the service at any time.</p>
+<p>By using frong.ai you agree to these terms and the Privacy Policy.</p>
+""",
+    )
+
+
+@app.get("/database")
+@app.get("/database/")
+def redirect_database():
+    return RedirectResponse("/wallets/", status_code=307)
+
+
+@app.get("/packs")
+@app.get("/packs/")
+def redirect_packs():
+    return RedirectResponse("/wallets/packs/", status_code=307)
+
+
+@app.get("/docs")
+@app.get("/docs/")
+@app.get("/api-docs")
+@app.get("/api-docs/")
+def redirect_api_docs():
+    return RedirectResponse("/wallets/api/", status_code=307)
+
+
+@app.get("/wallets")
+@app.get("/wallets/")
+def wallets_index():
+    resp = _wallets_response("")
+    if resp:
+        return resp
+    raise HTTPException(404, detail="wallets UI not built")
+
+
+@app.get("/wallets/{full_path:path}")
+def wallets_spa(full_path: str):
+    resp = _wallets_response(full_path)
+    if resp:
+        return resp
+    # Fall back to database index for unknown /wallets/* paths
+    index_path = _wallets_file("index.html")
+    if index_path:
+        return FileResponse(index_path)
+    raise HTTPException(404)
 
 
 @app.get("/")
@@ -212,7 +328,9 @@ def index():
 @app.get("/{full_path:path}")
 def spa(full_path: str):
     """Serve Vite assets; fall back to index.html for client routes."""
-    if full_path.startswith(("api/", "auth/", "health")):
+    if full_path.startswith(
+        ("api/", "auth/", "health", "privacy", "terms", "wallets", "database", "packs", "docs", "api-docs")
+    ):
         raise HTTPException(404)
     asset = _dist_file(full_path)
     if asset:
