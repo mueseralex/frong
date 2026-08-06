@@ -1,5 +1,5 @@
 """
-Hoodwallets batch processor — backend for process.hoodwallets.com.
+Frong batch processor — backend for process.frong.ai.
 
 Visitors submit up to MAX_WALLETS addresses (no account needed) and get back a
 CSV of full GMGN stats. Jobs go into a SQLite-backed FIFO queue; ONE worker
@@ -361,7 +361,7 @@ def cleanup_loop() -> None:
 # ---------------------------------------------------------------------------
 # API
 # ---------------------------------------------------------------------------
-app = FastAPI(title="Hoodwallets batch processor")
+app = FastAPI(title="Frong batch processor")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -565,7 +565,7 @@ def download(job_id: str) -> Response:
         content=buf.getvalue(),
         media_type="text/csv",
         headers={
-            "Content-Disposition": f'attachment; filename="hoodwallets_batch_{job_id[:8]}.csv"'
+            "Content-Disposition": f'attachment; filename="frong_batch_{job_id[:8]}.csv"'
         },
     )
 

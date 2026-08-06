@@ -18,12 +18,12 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/api/wallets": {
-        target: process.env.VITE_PROXY_TARGET || "https://api.hoodwallets.com",
+        target: process.env.VITE_PROXY_TARGET || "https://api.frong.ai",
         changeOrigin: true,
         secure: true,
       },
       "/api/summary": {
-        target: process.env.VITE_PROXY_TARGET || "https://api.hoodwallets.com",
+        target: process.env.VITE_PROXY_TARGET || "https://api.frong.ai",
         changeOrigin: true,
         secure: true,
       },

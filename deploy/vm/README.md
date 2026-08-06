@@ -4,7 +4,7 @@ Auth header everywhere: `X-Frong-Key: <FRONG_SCRAPE_SECRET>`
 
 ## Main scraper VM (`ssh -p 2222`) — CA traders
 
-Mounted on **api.hoodwallets.com** via `public_api` + `frong_public.py`.
+Mounted on **api.frong.ai** via `public_api` + `frong_public.py`.
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -15,7 +15,7 @@ Uses shared Postgres `app_tokens.gmgn_jwt` (minted by `hood-token`). Prefer this
 
 ## Process VM (`ssh -p 2223`) — wallet scrape + batch
 
-Inside **hood-process** (`worker_api` + `frong_routes.py`) on process.hoodwallets.com.
+Inside **hood-process** (`worker_api` + `frong_routes.py`) on process.frong.ai.
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -31,10 +31,10 @@ Chat wallet analysis still uses the public batch API (`FRONG_PROCESS_API` / `FRO
 ## Railway
 
 ```
-FRONG_SCRAPE_API=https://api.hoodwallets.com
+FRONG_SCRAPE_API=https://api.frong.ai
 FRONG_SCRAPE_SECRET=<same secret on both VMs>
-FRONG_PROCESS_API=https://process.hoodwallets.com
-FRONG_WALLET_API=https://api.hoodwallets.com
+FRONG_PROCESS_API=https://process.frong.ai
+FRONG_WALLET_API=https://api.frong.ai
 ```
 
 ## Refresh code on VMs

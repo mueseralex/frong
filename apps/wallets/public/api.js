@@ -7,8 +7,8 @@ Authentication:
 No API key is required.
 
 Base URLs:
-- Stored database: https://api.hoodwallets.com
-- Fresh batch processing: https://process.hoodwallets.com
+- Stored database: https://api.frong.ai
+- Fresh batch processing: https://process.frong.ai
 
 Rate and size limits:
 - Database API: 120 requests per minute per IP.
@@ -19,7 +19,7 @@ Rate and size limits:
 
 DATABASE ENDPOINTS
 
-1. GET https://api.hoodwallets.com/v1/wallets
+1. GET https://api.frong.ai/v1/wallets
 Returns:
 {
   "page": 1,
@@ -45,17 +45,17 @@ Query parameters:
   Example: {"sub_75k_entries":{"min":5},"balance":{"max":10}}
 
 Example:
-GET https://api.hoodwallets.com/v1/wallets?per_page=25&sort_by=total_profit&order=desc&min_winrate=60&fdv_only=true&fields=address,total_profit,winrate_30d
+GET https://api.frong.ai/v1/wallets?per_page=25&sort_by=total_profit&order=desc&min_winrate=60&fdv_only=true&fields=address,total_profit,winrate_30d
 
-2. GET https://api.hoodwallets.com/v1/wallets/{address}
+2. GET https://api.frong.ai/v1/wallets/{address}
 Returns the latest stored snapshot for one exact 0x wallet.
 Optional query parameter: fields=address,total_profit,winrate_30d
 Returns 404 when the wallet is not in the stored database.
 
-3. GET https://api.hoodwallets.com/v1/summary
+3. GET https://api.frong.ai/v1/summary
 Returns chain, total_wallets, fdv_enriched, profitable_wallets, and last_update.
 
-4. GET https://api.hoodwallets.com/v1/fields
+4. GET https://api.frong.ai/v1/fields
 Returns every public field with type, description, sortable, and range_filterable metadata.
 
 Public wallet fields:
@@ -80,7 +80,7 @@ FRESH WALLET PROCESSING
 Processing is asynchronous. Never wait for the POST request to return wallet data.
 
 Step 1 — submit:
-POST https://process.hoodwallets.com/api/v1/batches
+POST https://process.frong.ai/api/v1/batches
 Content-Type: application/json
 Body:
 {
@@ -91,14 +91,14 @@ Response:
 {"job_id":"UUID","total":1}
 
 Step 2 — poll every 2-5 seconds:
-GET https://process.hoodwallets.com/api/v1/batches/{job_id}
+GET https://process.frong.ai/api/v1/batches/{job_id}
 The status is queued, processing, done, or error.
 Progress fields include total, done, queue_position, and error.
 When done, the response includes results_url and download_url.
 
 Step 3 — retrieve results:
-JSON: GET https://process.hoodwallets.com/api/v1/batches/{job_id}/results
-CSV:  GET https://process.hoodwallets.com/api/v1/batches/{job_id}/results.csv
+JSON: GET https://process.frong.ai/api/v1/batches/{job_id}/results
+CSV:  GET https://process.frong.ai/api/v1/batches/{job_id}/results.csv
 
 The job ID acts as a private access token. Do not publish or log it.
 Successful fresh results are also inserted or updated in the main public database.
@@ -115,7 +115,7 @@ Python database example:
 import requests
 
 response = requests.get(
-    "https://api.hoodwallets.com/v1/wallets",
+    "https://api.frong.ai/v1/wallets",
     params={
         "per_page": 100,
         "min_profit": 10000,
@@ -130,7 +130,7 @@ response.raise_for_status()
 wallets = response.json()["wallets"]
 
 JavaScript database example:
-const url = new URL("https://api.hoodwallets.com/v1/wallets");
+const url = new URL("https://api.frong.ai/v1/wallets");
 url.search = new URLSearchParams({
   per_page: "100",
   min_profit: "10000",

@@ -13,7 +13,7 @@ WORKDIR /app
 COPY apps/wallets/package.json apps/wallets/package-lock.json ./
 RUN npm ci
 COPY apps/wallets/ ./
-ENV VITE_API_URL=https://api.hoodwallets.com
+ENV VITE_API_URL=https://api.frong.ai
 RUN npm run build
 
 FROM python:3.12-slim-bookworm

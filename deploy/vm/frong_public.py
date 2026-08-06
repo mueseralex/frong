@@ -1,4 +1,4 @@
-"""Frong traders routes for the main scraper VM public API (api.hoodwallets.com).
+"""Frong traders routes for the main scraper VM public API (api.frong.ai).
 
 Mounted at /v1/frong/* — uses shared DB JWT + tls_client. Wallet scrapes stay on
 the process VM; this path is for CA → traders only (better VPN / less 429s).

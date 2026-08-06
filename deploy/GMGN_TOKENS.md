@@ -26,13 +26,13 @@ Mint stays on the scraper VM / Mac with Chrome+Xvfb. Frong never mints in Railwa
 | Worker | Job | Where |
 |--------|-----|--------|
 | **main scraper** | trending CAs + wallet refresh loop | existing scraper VM |
-| **process/batch** | on-demand wallet batches | process.hoodwallets.com |
+| **process/batch** | on-demand wallet batches | process.frong.ai |
 | **frong-chat** | user chat tool calls (wallet/CA) | Railway API (rate-limited) |
 | **frong-ca / frong-scrape** | CA traders + on-demand wallet scrape | process VM `/api/frong/*` |
 | **frong-reply** | X mention replies | `python -m bot.worker` (later) |
 | **frong-migrate** | migration auto-tweets | same bot process, later |
 
-Railway calls `https://process.hoodwallets.com/api/frong/*` with `FRONG_SCRAPE_SECRET`. The process worker syncs `app_tokens.gmgn_jwt` from the main minter into `~/.gmgn_token.json` — Frong never mints Chrome tokens itself.
+Railway calls `https://process.frong.ai/api/frong/*` with `FRONG_SCRAPE_SECRET`. The process worker syncs `app_tokens.gmgn_jwt` from the main minter into `~/.gmgn_token.json` — Frong never mints Chrome tokens itself.
 
 ## Rate budgets (per worker)
 

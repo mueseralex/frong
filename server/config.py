@@ -23,8 +23,8 @@ OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/"
 FRONG_MODEL = os.environ.get("FRONG_MODEL", "frong")
 
 # Upstream Robinhood-chain wallet intel + on-demand scrape (env only; no product brand).
-WALLET_API = os.environ.get("FRONG_WALLET_API", "https://api.hoodwallets.com").rstrip("/")
-PROCESS_API = os.environ.get("FRONG_PROCESS_API", "https://process.hoodwallets.com").rstrip("/")
+WALLET_API = os.environ.get("FRONG_WALLET_API", "https://api.frong.ai").rstrip("/")
+PROCESS_API = os.environ.get("FRONG_PROCESS_API", "https://process.frong.ai").rstrip("/")
 # Authenticated scrape worker on the process VM (shared GMGN JWT). Prefer this for CA traders.
 SCRAPE_API = os.environ.get("FRONG_SCRAPE_API", PROCESS_API).rstrip("/")
 SCRAPE_SECRET = os.environ.get("FRONG_SCRAPE_SECRET", "").strip()

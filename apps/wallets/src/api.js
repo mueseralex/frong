@@ -1,4 +1,4 @@
-// Production build sets VITE_API_URL=https://api.hoodwallets.com (wallet DB stays on the VM).
+// Production build sets VITE_API_URL=https://api.frong.ai (wallet DB stays on the VM).
 // In local Vite, leave empty so /api/* proxies to the public API.
 const BASE = import.meta.env.VITE_API_URL || "";
 

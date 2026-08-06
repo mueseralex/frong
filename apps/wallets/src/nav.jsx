@@ -27,7 +27,7 @@ export default function FrongNav({ active = "database" }) {
       {item("database", "/wallets/", "Database")}
       {item("packs", "/wallets/packs/", "Packs")}
       {item("api", "/wallets/api/", "API")}
-      <a className="nav-link" href="https://process.hoodwallets.com" target="_blank" rel="noopener noreferrer">
+      <a className="nav-link" href="https://process.frong.ai" target="_blank" rel="noopener noreferrer">
         Upload
       </a>
       <a
