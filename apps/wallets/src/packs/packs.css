@@ -82,7 +82,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #0b0d0c;
+  color: #fff;
   background: var(--accent);
   border-radius: 999px;
   padding: 3px 8px;
@@ -99,6 +99,14 @@ body {
 .brand-with-logo {
   color: var(--accent);
   text-decoration: none;
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .nav-link {
@@ -141,7 +149,7 @@ body {
   background: var(--accent);
   border: 1px solid var(--accent);
   border-radius: 999px;
-  color: #0b0d0c;
+  color: #fff;
   padding: 8px 16px;
   font-family: var(--font);
   font-weight: 600;
@@ -150,7 +158,7 @@ body {
   transition: filter 0.15s, transform 0.15s;
 }
 .btn:hover { filter: brightness(1.05); }
-.btn.primary { background: var(--accent); color: #0b0d0c; }
+.btn.primary { background: var(--accent); color: #fff; }
 .btn.big { padding: 12px 22px; font-size: 14px; }
 .btn.ghost {
   background: transparent;
@@ -596,7 +604,7 @@ body {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: #0b0d0c;
+  color: #fff;
   background: rgba(255, 255, 255, 0.88);
   border-radius: 999px;
   padding: 4px 12px;
@@ -658,24 +666,30 @@ body {
   z-index: -1;
 }
 
-/* tier foil colorways — white < purple < pink */
+/* tier foil colorways — white < purple < pink (must match labels) */
 .pack-skin-b {
-  --pack-accent: #f4eef2;
+  --pack-accent: #e8e2e6;
   --foil-top: #ffffff;
-  --foil-mid: #f0e6ec;
-  --foil-bot: #d8c4ce;
+  --foil-mid: #f4f1f3;
+  --foil-bot: #b8b0b4;
+  --foil-sheen: rgba(255, 255, 255, 0.75);
+  --foil-ink: #5c5458;
 }
 .pack-skin-a {
-  --pack-accent: #a855f7;
-  --foil-top: #e9d5ff;
-  --foil-mid: #a855f7;
-  --foil-bot: #6b21a8;
+  --pack-accent: #7c3aed;
+  --foil-top: #d8b4fe;
+  --foil-mid: #7c3aed;
+  --foil-bot: #4c1d95;
+  --foil-sheen: rgba(233, 213, 255, 0.55);
+  --foil-ink: #f5e9ff;
 }
 .pack-skin-s {
-  --pack-accent: #f23db8;
-  --foil-top: #ffd0ef;
-  --foil-mid: #f23db8;
-  --foil-bot: #9d176e;
+  --pack-accent: #ec4899;
+  --foil-top: #fda4d5;
+  --foil-mid: #ec4899;
+  --foil-bot: #9d174d;
+  --foil-sheen: rgba(255, 200, 230, 0.55);
+  --foil-ink: #fff5fb;
 }
 
 .pack-css .pack-badge {
@@ -693,6 +707,7 @@ body {
 }
 
 .pack-tier-label {
+  color: var(--foil-ink, #fff);
   position: absolute;
   left: 0;
   right: 0;
@@ -777,7 +792,7 @@ body {
 .tier-price {
   font-size: 11px;
   font-weight: 700;
-  color: #0b0d0c;
+  color: #fff;
   background: var(--tier);
   border-radius: 999px;
   padding: 3px 8px;
@@ -877,7 +892,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #0b0d0c;
+  color: #fff;
   background: var(--rc);
   border-radius: 999px;
   padding: 3px 9px;
@@ -1536,7 +1551,7 @@ body.shake-lg { animation: shakeLg 0.55s ease; }
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #0b0d0c;
+  color: #fff;
   background: var(--rc, var(--accent));
   border-radius: 999px;
   padding: 3px 8px;
@@ -1611,7 +1626,7 @@ body.shake-lg { animation: shakeLg 0.55s ease; }
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
-  color: #0b0d0c;
+  color: #fff;
   font-weight: 700;
   font-size: 12.5px;
   padding: 10px 18px;
@@ -1636,4 +1651,56 @@ body.shake-lg { animation: shakeLg 0.55s ease; }
     padding: 24px 12px 40px;
     box-sizing: border-box;
   }
+}
+
+
+.pack-rip-tag {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--foil-ink, #fff);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.pack-badge {
+  background: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 20px rgba(40, 10, 30, 0.25);
+}
+
+.pack-badge img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  filter: none !important;
+}
+
+
+.pack-badge-letter {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+  color: #ff1f8f;
+  line-height: 1;
+}
+
+.pack-badge {
+  display: grid;
+  place-items: center;
+}
+
+.wax-seal-logo {
+  display: grid;
+  place-items: center;
+  color: #ff1f8f;
+}
+.wax-seal-logo .pack-badge-letter {
+  font-size: 1.1rem;
 }

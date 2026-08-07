@@ -3,44 +3,19 @@
 from __future__ import annotations
 
 from typing import Iterable
-from urllib.parse import urlparse
 
 import httpx
 from fastapi import HTTPException, Request, Response
 
-HOP_BY_HOP = {
-    "connection",
-    "keep-alive",
-    "proxy-authenticate",
-    "proxy-authorization",
-    "te",
-    "trailers",
-    "transfer-encoding",
-    "upgrade",
-    "host",
-    "content-length",
-    # httpx already decompresses; never forward these or clients double-decode.
-    "content-encoding",
-    "content-length",
+# Never forward browser/CDN headers upstream — they make Cloudflare treat the
+# Railway → api/process hop as a forged/proxied request ("prohibited IP" / 403).
+FORWARD_REQUEST_HEADERS = {
+    "accept",
+    "content-type",
+    "authorization",
+    "x-frong-scrape-secret",
+    "x-scrape-secret",
 }
-
-
-async def _doh_a(hostname: str) -> str | None:
-    """Resolve A record via Cloudflare DoH when local DNS is stale."""
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            res = await client.get(
-                "https://cloudflare-dns.com/dns-query",
-                params={"name": hostname, "type": "A"},
-                headers={"accept": "application/dns-json"},
-            )
-            res.raise_for_status()
-            for ans in res.json().get("Answer") or []:
-                if ans.get("type") == 1 and ans.get("data"):
-                    return str(ans["data"]).strip()
-    except Exception:  # noqa: BLE001
-        return None
-    return None
 
 
 async def forward(
@@ -64,47 +39,33 @@ async def forward(
     headers = {
         k: v
         for k, v in request.headers.items()
-        if k.lower() not in HOP_BY_HOP
-        and k.lower() not in {"cookie", "accept-encoding"}
+        if k.lower() in FORWARD_REQUEST_HEADERS
     }
-    headers["accept"] = request.headers.get("accept", "*/*")
-    # Ask upstream for plain bytes; we always return decompressed bodies.
+    headers.setdefault("accept", "*/*")
     headers["accept-encoding"] = "identity"
+    headers["user-agent"] = "frong-apex-proxy/1.0"
     body = await request.body()
 
-    upstream: httpx.Response | None = None
     try:
         async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
             upstream = await client.request(method, url, headers=headers, content=body)
-    except httpx.RequestError:
-        parsed = urlparse(url)
-        host = parsed.hostname or ""
-        ip = await _doh_a(host) if host else None
-        if not ip:
-            raise HTTPException(502, "upstream unreachable (dns)") from None
-        ip_url = url.replace(f"{parsed.scheme}://{host}", f"{parsed.scheme}://{ip}", 1)
-        headers = {**headers, "host": host}
-        try:
-            async with httpx.AsyncClient(
-                timeout=timeout,
-                follow_redirects=False,
-                verify=False,
-            ) as client:
-                upstream = await client.request(
-                    method,
-                    ip_url,
-                    headers=headers,
-                    content=body,
-                    extensions={"sni_hostname": host},
-                )
-        except httpx.RequestError as exc:
-            raise HTTPException(502, f"upstream unreachable: {exc}") from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"upstream unreachable: {exc}") from exc
 
-    assert upstream is not None
+    hop = {
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailers",
+        "transfer-encoding",
+        "upgrade",
+        "content-encoding",
+        "content-length",
+    }
     out_headers = {
-        k: v
-        for k, v in upstream.headers.items()
-        if k.lower() not in HOP_BY_HOP
+        k: v for k, v in upstream.headers.items() if k.lower() not in hop
     }
     return Response(
         content=upstream.content,

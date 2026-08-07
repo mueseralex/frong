@@ -193,9 +193,7 @@ export default function PackRip({ tier, pull, onDone, onClose }) {
                     <PackArt tier={tier} />
                   </div>
                   <div className="seal-fly">
-                    <div className="wax-seal wax-seal-logo">
-                      <img src="/wallets/frong.svg" alt="" />
-                    </div>
+                    <div className="wax-seal" aria-hidden />
                   </div>
                 </>
               ) : (

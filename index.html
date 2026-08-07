@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frong.ai</title>
-    <link rel="icon" href="/frong.svg" type="image/svg+xml" />
+    <link rel="icon" href="/logo-dot.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:site_name" content="frong.ai" />
+    <meta property="og:title" content="frong.ai" />
+    <meta property="og:description" content="Chat with Frong LLM in a private session." />
+    <meta property="og:image" content="https://frong.ai/logo.jpg" />
+    <meta property="og:url" content="https://frong.ai/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="frong.ai" />
+    <meta name="twitter:description" content="Chat with Frong LLM in a private session." />
+    <meta name="twitter:image" content="https://frong.ai/logo.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -25,18 +35,21 @@
     </div>
 
     <div id="app">
+
       <div class="stage">
         <section id="gate" class="gate hidden">
           <p class="gate-title">frong.ai</p>
-          <p class="gate-copy">A funny frog with a desk-analyst brain. Sign in with X to talk.</p>
-          <a class="btn-x" id="login-x" href="/auth/x">
-            <svg class="x-mark" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                fill="currentColor"
-                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-              />
-            </svg>
-            Continue with X
+          <p class="gate-copy">Chat with Frong LLM in a private session.</p>
+          <!-- OAuth stays at /auth/x — UI gated until we flip FRONG_X_LOGIN_ENABLED -->
+          <a
+            class="btn-x is-soon"
+            id="login-x"
+            href="/auth/x"
+            aria-disabled="true"
+            tabindex="-1"
+            title="Coming soon"
+          >
+            Coming soon
           </a>
         </section>
 
@@ -71,11 +84,10 @@
         </section>
 
         <aside class="dock" aria-label="frong.ai tools">
-          <p class="dock-title">Open</p>
-          <a class="dock-link" href="/wallets/">Database</a>
-          <a class="dock-link" href="/wallets/packs/">Packs</a>
-          <a class="dock-link" href="/wallets/api/">API</a>
-          <a class="dock-link" href="/upload/">Upload</a>
+          <span class="dock-link dock-link-disabled" aria-disabled="true" title="Coming soon">Database</span>
+          <span class="dock-link dock-link-disabled" aria-disabled="true" title="Coming soon">Packs</span>
+          <span class="dock-link dock-link-disabled" aria-disabled="true" title="Coming soon">API</span>
+          <span class="dock-link dock-link-disabled" aria-disabled="true" title="Coming soon">Upload</span>
           <a
             class="dock-link dock-x"
             href="https://x.com/frong_ai"

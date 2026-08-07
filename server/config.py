@@ -41,6 +41,7 @@ X_SCOPES = os.environ.get("X_SCOPES", "tweet.read users.read")
 
 X_BOT_BEARER = os.environ.get("X_BOT_BEARER", "").strip()
 X_BOT_ACCESS_TOKEN = os.environ.get("X_BOT_ACCESS_TOKEN", "").strip()
+X_BOT_REFRESH_TOKEN = os.environ.get("X_BOT_REFRESH_TOKEN", "").strip()
 X_BOT_ACCESS_SECRET = os.environ.get("X_BOT_ACCESS_SECRET", "").strip()
 X_BOT_API_KEY = os.environ.get("X_BOT_API_KEY", "").strip()
 X_BOT_API_SECRET = os.environ.get("X_BOT_API_SECRET", "").strip()

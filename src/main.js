@@ -1,6 +1,14 @@
 import "./style.css";
 
 const gate = document.getElementById("gate");
+
+const loginX = document.getElementById("login-x");
+if (loginX?.classList.contains("is-soon")) {
+  loginX.addEventListener("click", (e) => {
+    e.preventDefault();
+  });
+}
+
 const panel = document.getElementById("panel");
 const term = document.getElementById("term");
 const form = document.getElementById("composer");

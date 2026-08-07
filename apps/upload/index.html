@@ -1,50 +1,70 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/upload/logo-dot.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/upload/apple-touch-icon.png" />
+    <meta property="og:site_name" content="frong.ai" />
+    <meta property="og:title" content="frong.ai — batch wallet checker" />
+    <meta property="og:description" content="Paste wallets and pull fresh on-chain stats into a CSV." />
+    <meta property="og:image" content="https://frong.ai/logo.jpg" />
+    <meta property="og:url" content="https://frong.ai/upload/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="frong.ai — batch wallet checker" />
+    <meta name="twitter:description" content="Paste wallets and pull fresh on-chain stats into a CSV." />
+    <meta name="twitter:image" content="https://frong.ai/logo.jpg" />
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>frong.ai — batch wallet checker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="/upload/frong.svg" />
-  <link rel="stylesheet" href="/upload/styles.css?v=3" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/upload/styles.css?v=6" />
 </head>
 <body>
   <div class="page">
     <header class="topbar">
-      <a class="brand brand-with-logo" href="/upload/"><img src="/upload/frong.svg" alt="" />frong.ai</a>
-      <span class="tagline">Batch wallet checker</span>
-      <a class="back-link" href="https://frong.ai/wallets/">&larr; Back to the table</a>
+      <a class="brand" href="/">frong.ai</a>
+      <div class="tagline">Robinhood chain · wallets, packs, and frog desk</div>
+      <nav class="topnav" aria-label="Site">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/wallets/">Database</a>
+        <a class="nav-link" href="/wallets/packs/">Packs</a>
+        <a class="nav-link" href="/wallets/api/">API</a>
+        <span class="nav-link nav-link-active" aria-current="page">Upload</span>
+        <a class="nav-link" href="https://x.com/frong_ai" target="_blank" rel="noopener noreferrer">@frong_ai</a>
+      </nav>
     </header>
 
     <section class="intro">
+      <p class="eyebrow">Upload</p>
       <h1>Check your own wallets</h1>
       <p class="sub">
-        Paste up to 100 Robinhood-chain wallet addresses (or drop a .txt/.csv file)
-        and we'll pull fresh on-chain stats for every one — profit, winrate, FDV entry
-        insights and more — into a CSV you can download.
+        Paste up to 100 Robinhood-chain addresses (or drop a .txt/.csv). We pull fresh
+        on-chain stats — profit, winrate, FDV insights — into a CSV you can download.
       </p>
     </section>
 
-    <div class="upload-grid">
-      <aside class="side-card recent-card">
-        <div class="side-card-head">
-          <div>
-            <span class="eyebrow">Community</span>
-            <h2>Recent batches</h2>
-          </div>
-          <span class="activity-pulse" title="Live activity"></span>
-        </div>
-        <div class="recent-list" id="recent-list">
-          <div class="recent-empty">Loading recent activity…</div>
-        </div>
-      </aside>
+    <div class="stat-strip" aria-label="Last 24 hours">
+      <div class="stat-pill">
+        <strong id="stat-wallets">—</strong>
+        <span>Wallets submitted</span>
+      </div>
+      <div class="stat-pill">
+        <strong id="stat-completed">—</strong>
+        <span>Batches completed</span>
+      </div>
+      <div class="stat-pill">
+        <strong id="stat-active">—</strong>
+        <span>Active now</span>
+      </div>
+    </div>
 
+    <div class="upload-grid">
       <main class="upload-column">
         <div class="card">
           <textarea id="input" placeholder="0x59050e6c37ed6bdd003966af9b061757c7f04757
-0x1234...  (one address per line — commas and extra text are fine, we'll find the addresses)"></textarea>
+0x1234…  (one address per line — commas and extra text are fine)"></textarea>
           <label class="note-field" for="note">
             <span>Optional public note</span>
             <span class="note-count" id="note-count">0 / 80</span>
@@ -69,31 +89,24 @@
         </div>
 
         <ul class="notes">
-          <li>No account needed — you'll get a link to track progress and download results.</li>
-          <li>Every wallet is looked up live and successful results join the public database.</li>
+          <li>No account needed — you get a link to track progress and download results.</li>
+          <li>Every wallet is looked up live; successful results join the public database.</li>
           <li>One batch at a time per visitor; results are kept for 48 hours.</li>
         </ul>
       </main>
 
-      <aside class="side-card activity-card">
-        <span class="eyebrow">Last 24 hours</span>
-        <h2>Batch activity</h2>
-        <div class="activity-stats">
+      <aside class="side-card recent-card">
+        <div class="side-card-head">
           <div>
-            <strong id="stat-wallets">—</strong>
-            <span>Wallets submitted</span>
+            <span class="eyebrow">Community</span>
+            <h2>Recent batches</h2>
           </div>
-          <div>
-            <strong id="stat-completed">—</strong>
-            <span>Batches completed</span>
-          </div>
-          <div>
-            <strong id="stat-active">—</strong>
-            <span>Active now</span>
-          </div>
+          <span class="activity-pulse" title="Live activity"></span>
         </div>
-        <div class="live-log" id="live-log"></div>
-        <p class="side-copy">Every successful lookup helps grow the shared frong.ai database.</p>
+        <div class="recent-list" id="recent-list">
+          <div class="recent-empty">Loading recent activity…</div>
+        </div>
+        <div class="live-log" id="live-log" hidden></div>
       </aside>
     </div>
   </div>

@@ -46,6 +46,7 @@ export const PACK_TIERS = [
     highlights: ["3 wallets", "Chase a Purple", "Best for volume scanning"],
     accent: "#f4eef2",
     oddsBoost: 0,
+    img: "/wallets/pack-art/white-v5.png",
   },
   {
     id: "a",
@@ -60,6 +61,7 @@ export const PACK_TIERS = [
     highlights: ["4 wallets", "Boosted Purple / Pink", "Balanced chase pack"],
     accent: "#a855f7",
     oddsBoost: 0.16,
+    img: "/wallets/pack-art/purple-v5.png",
   },
   {
     id: "s",
@@ -75,6 +77,7 @@ export const PACK_TIERS = [
     accent: "#f23db8",
     oddsBoost: 0.32,
     guaranteedMin: "purple",
+    img: "/wallets/pack-art/pink-v5.png",
   },
 ];
 

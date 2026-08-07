@@ -36,6 +36,7 @@ from config import (  # noqa: E402
 )
 from db import delete_session, get_chat, init_db, session_user  # noqa: E402
 from proxy import forward  # noqa: E402
+import wallet_api  # noqa: E402
 from tools.dune import activity_snapshot, cache_snapshot_file, upload_to_dune  # noqa: E402
 
 FRONTEND_URL = os.environ.get("FRONG_FRONTEND_URL", FRONG_SITE_URL).rstrip("/")
@@ -280,14 +281,128 @@ def terms():
     )
 
 
+# Prefer direct Postgres when configured (Railway → api.frong.ai is flaky).
+if wallet_api.enabled():
+    app.include_router(wallet_api.router, prefix="/wallet-api")
+
+
 @app.api_route("/wallet-api/{path:path}", methods=["GET", "OPTIONS"])
 async def wallet_api_proxy(path: str, request: Request):
     """Browser-facing wallet DB proxy (avoids flaky api.* subdomain DNS)."""
+    if wallet_api.enabled():
+        raise HTTPException(404, detail="not found")
     return await forward(
         request,
         upstream_base=WALLET_API,
         upstream_path=path,
         allow_methods=("GET", "OPTIONS"),
+    )
+
+
+
+def _site_logo_png() -> Path | None:
+    """Pink round dot for browser tabs."""
+    for candidate in (
+        DIST / "logo-dot.png",
+        PROJECT / "public" / "logo-dot.png",
+        DIST / "logo.png",
+        PROJECT / "public" / "logo.png",
+        WALLETS_DIST / "logo-dot.png",
+        WALLETS_DIST / "logo.png",
+        UPLOAD_DIST / "logo-dot.png",
+        UPLOAD_DIST / "logo.png",
+    ):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _site_logo_jpg() -> Path | None:
+    """Square source for Open Graph / Google preview cards."""
+    for candidate in (
+        DIST / "logo.jpg",
+        PROJECT / "public" / "logo.jpg",
+        WALLETS_DIST / "logo.jpg",
+        UPLOAD_DIST / "logo.jpg",
+    ):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+@app.get("/logo-dot.png")
+@app.get("/logo.png")
+@app.get("/favicon.ico")
+@app.get("/favicon.svg")
+@app.get("/frong.svg")
+@app.get("/wallets/logo-dot.png")
+@app.get("/wallets/logo.png")
+@app.get("/wallets/favicon.svg")
+@app.get("/wallets/frong.svg")
+@app.get("/upload/logo-dot.png")
+@app.get("/upload/logo.png")
+@app.get("/upload/favicon.svg")
+@app.get("/upload/frong.svg")
+def site_logo_png_routes():
+    logo = _site_logo_png() or _site_logo_jpg()
+    if not logo:
+        raise HTTPException(404, detail="logo missing")
+    media = "image/png" if logo.suffix.lower() == ".png" else "image/jpeg"
+    return FileResponse(
+        logo,
+        media_type=media,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+@app.get("/logo.jpg")
+@app.get("/wallets/logo.jpg")
+@app.get("/upload/logo.jpg")
+def site_logo_jpg_routes():
+    logo = _site_logo_jpg()
+    if not logo:
+        raise HTTPException(404, detail="logo missing")
+    return FileResponse(
+        logo,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+@app.get("/apple-touch-icon.png")
+@app.get("/wallets/apple-touch-icon.png")
+@app.get("/upload/apple-touch-icon.png")
+def apple_touch_icon():
+    for candidate in (
+        DIST / "apple-touch-icon.png",
+        PROJECT / "public" / "apple-touch-icon.png",
+        WALLETS_DIST / "apple-touch-icon.png",
+        UPLOAD_DIST / "apple-touch-icon.png",
+        _site_logo_png(),
+    ):
+        if candidate and Path(candidate).is_file():
+            return FileResponse(
+                candidate,
+                media_type="image/png",
+                headers={"Cache-Control": "public, max-age=86400"},
+            )
+    raise HTTPException(404, detail="logo missing")
+
+
+@app.get("/wallets/newlogo.png")
+@app.get("/wallets/mainlogo.png")
+@app.get("/newlogo.png")
+@app.get("/mainlogo.png")
+def _gone_old_logos():
+    """Old Hood artwork — intentionally removed."""
+    return Response(
+        content='{"detail":"logo removed"}',
+        status_code=410,
+        media_type="application/json",
+        headers={
+            "Cache-Control": "no-store, max-age=0",
+            "CDN-Cache-Control": "no-store",
+        },
     )
 
 
